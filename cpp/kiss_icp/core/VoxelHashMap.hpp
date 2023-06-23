@@ -48,7 +48,15 @@ struct VoxelHashMap {
     struct VoxelHash {
         size_t operator()(const Voxel &voxel) const {
             const uint32_t *vec = reinterpret_cast<const uint32_t *>(voxel.data());
-            return ((1 << 20) - 1) & (vec[0] * 73856093 ^ vec[1] * 19349663 ^ vec[2] * 83492791);
+            std::size_t seed = 3U;
+            for(std::size_t idx{0U}; idx < 3U; ++idx) {
+                auto x = vec[idx];
+                x = ((x >> 16) ^ x) * 0x45d9f3b;
+                x = ((x >> 16) ^ x) * 0x45d9f3b;
+                x = (x >> 16) ^ x;
+                seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
         }
     };
 
